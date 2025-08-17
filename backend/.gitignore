@@ -1,0 +1,8 @@
+# Node modules (if any)
+node_modules/
+
+# Model files
+backend/models/model.h5
+
+# Any other temporary files
+*.log
