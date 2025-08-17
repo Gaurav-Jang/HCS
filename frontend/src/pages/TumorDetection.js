@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { toast } from 'react-toastify';
-import { mlService } from '../utils/auth';
+import React, { useState } from "react";
+import { toast } from "react-toastify";
+import { mlService } from "../utils/auth";
+import DownloadReport from "./DownloadReports";
 
 const TumorDetection = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -11,9 +12,9 @@ const TumorDetection = () => {
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
+    if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
-    } else if (e.type === 'dragleave') {
+    } else if (e.type === "dragleave") {
       setDragActive(false);
     }
   };
@@ -22,7 +23,7 @@ const TumorDetection = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setSelectedFile(e.dataTransfer.files[0]);
     }
@@ -36,24 +37,24 @@ const TumorDetection = () => {
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      toast.error('Please select an MRI image first');
+      toast.error("Please select an MRI image first");
       return;
     }
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('image', selectedFile);
+    formData.append("image", selectedFile);
 
     try {
       const result = await mlService.predictTumor(formData);
       if (result.success) {
         setPrediction(result.data);
-        toast.success('MRI analysis completed successfully!');
+        toast.success("MRI analysis completed successfully!");
       } else {
         toast.error(result.error);
       }
     } catch (error) {
-      toast.error('Failed to analyze MRI image');
+      toast.error("Failed to analyze MRI image");
     } finally {
       setUploading(false);
     }
@@ -91,13 +92,13 @@ const TumorDetection = () => {
               {!selectedFile ? (
                 <div
                   className={`border-2 border-dashed rounded p-5 text-center ${
-                    dragActive ? 'border-primary bg-light' : 'border-secondary'
+                    dragActive ? "border-primary bg-light" : "border-secondary"
                   }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
                   onDragOver={handleDrag}
                   onDrop={handleDrop}
-                  style={{ minHeight: '300px', cursor: 'pointer' }}
+                  style={{ minHeight: "300px", cursor: "pointer" }}
                 >
                   <div className="d-flex flex-column align-items-center justify-content-center h-100">
                     <i className="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
@@ -116,7 +117,8 @@ const TumorDetection = () => {
                       Choose File
                     </label>
                     <small className="text-muted mt-3">
-                      Supported formats: PNG, JPG, JPEG, GIF, BMP, TIFF<br />
+                      Supported formats: PNG, JPG, JPEG, GIF, BMP, TIFF
+                      <br />
                       Maximum file size: 16MB
                     </small>
                   </div>
@@ -128,13 +130,13 @@ const TumorDetection = () => {
                       src={URL.createObjectURL(selectedFile)}
                       alt="Selected MRI"
                       className="img-fluid rounded"
-                      style={{ maxHeight: '300px', maxWidth: '100%' }}
+                      style={{ maxHeight: "300px", maxWidth: "100%" }}
                     />
                   </div>
                   <div className="mb-3">
                     <h6 className="fw-bold">{selectedFile.name}</h6>
                     <small className="text-muted">
-                      Size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      Size: {selectedFile.size / 1024 / 1024} MB
                     </small>
                   </div>
                   <div className="d-grid gap-2">
@@ -155,7 +157,10 @@ const TumorDetection = () => {
                         </>
                       )}
                     </button>
-                    <button className="btn btn-outline-secondary" onClick={resetForm}>
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={resetForm}
+                    >
                       <i className="fas fa-times me-2"></i>
                       Remove Image
                     </button>
@@ -181,52 +186,47 @@ const TumorDetection = () => {
                   <i className="fas fa-brain fa-4x text-muted mb-3"></i>
                   <h5 className="text-muted mb-3">No Analysis Yet</h5>
                   <p className="text-muted">
-                    Upload an MRI image to get AI-powered brain tumor detection results.
+                    Upload an MRI image to get AI-powered brain tumor detection
+                    results.
                   </p>
                 </div>
               ) : (
                 <div>
                   {/* Main Result */}
                   <div className="text-center mb-4">
-                    <div className={`badge fs-4 p-3 mb-3 ${
-                      prediction.result.prediction === 'tumor_detected' 
-                        ? 'bg-danger' 
-                        : 'bg-success'
-                    }`}>
-                      {prediction.result.prediction === 'tumor_detected' 
-                        ? 'Tumor Detected' 
-                        : 'No Tumor Detected'}
+                    <div
+                      className={`badge fs-4 p-3 mb-3 ${
+                        prediction.data.prediction !== "notumor"
+                          ? "bg-danger"
+                          : "bg-success"
+                      }`}
+                    >
+                      {prediction.data.prediction !== "notumor"
+                        ? "Tumor Detected"
+                        : "No Tumor Detected"}
                     </div>
-                    <div className="progress mb-2" style={{ height: '20px' }}>
+                    <div className="progress mb-2" style={{ height: "20px" }}>
                       <div
                         className={`progress-bar ${
-                          prediction.result.prediction === 'tumor_detected' 
-                            ? 'bg-danger' 
-                            : 'bg-success'
+                          prediction.data.prediction !== "notumor"
+                            ? "bg-danger"
+                            : "bg-success"
                         }`}
-                        style={{ width: `${prediction.result.confidence * 100}%` }}
+                        style={{ width: `${prediction.data.confidence}%` }}
                       ></div>
                     </div>
                     <p className="text-muted">
-                      Confidence: {(prediction.result.confidence * 100).toFixed(1)}%
+                      Confidence: {prediction.data.confidence.toFixed(1)}%
                     </p>
                   </div>
 
-                  {/* Detailed Results */}
+                  {/* Predicted Class */}
                   <div className="row text-center mb-4">
-                    <div className="col-6">
+                    <div className="col-12">
                       <div className="border rounded p-3">
-                        <h6 className="text-danger">Tumor Probability</h6>
-                        <h4 className="text-danger">
-                          {(prediction.result.tumor_probability * 100).toFixed(1)}%
-                        </h4>
-                      </div>
-                    </div>
-                    <div className="col-6">
-                      <div className="border rounded p-3">
-                        <h6 className="text-success">Normal Probability</h6>
-                        <h4 className="text-success">
-                          {(prediction.result.no_tumor_probability * 100).toFixed(1)}%
+                        <h6 className="text-info">Predicted Class</h6>
+                        <h4 className="text-info">
+                          {prediction.data.prediction}
                         </h4>
                       </div>
                     </div>
@@ -238,13 +238,17 @@ const TumorDetection = () => {
                       <i className="fas fa-info-circle me-2"></i>
                       Recommendation
                     </h6>
-                    {prediction.result.prediction === 'tumor_detected' ? (
+                    {prediction.confidence > 50 ? (
                       <p className="mb-0">
-                        The AI model has detected potential abnormalities. Please consult with a neurologist immediately for further evaluation and proper medical assessment.
+                        The AI model has detected potential abnormalities.
+                        Please consult with a neurologist immediately for
+                        further evaluation and proper medical assessment.
                       </p>
                     ) : (
                       <p className="mb-0">
-                        The AI analysis suggests no tumor is present. However, continue with regular check-ups as recommended by your healthcare provider.
+                        The AI analysis suggests no tumor is present. However,
+                        continue with regular check-ups as recommended by your
+                        healthcare provider.
                       </p>
                     )}
                   </div>
@@ -255,10 +259,18 @@ const TumorDetection = () => {
                       <i className="fas fa-calendar-plus me-2"></i>
                       Book Consultation
                     </button>
-                    <button className="btn btn-outline-primary">
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={DownloadReport}
+                    >
                       <i className="fas fa-download me-2"></i>
                       Download Report
                     </button>
+
+                    {/* <DownloadReport
+                      user={currentUser}
+                      prediction={predictionData}
+                    /> */}
                   </div>
                 </div>
               )}
@@ -281,15 +293,17 @@ const TumorDetection = () => {
               <div className="row">
                 <div className="col-md-3">
                   <h6 className="fw-bold">Model Type</h6>
-                  <p className="text-muted">Convolutional Neural Network (CNN)</p>
+                  <p className="text-muted">
+                    Convolutional Neural Network (CNN)
+                  </p>
                 </div>
                 <div className="col-md-3">
                   <h6 className="fw-bold">Accuracy</h6>
-                  <p className="text-muted">92.5%</p>
+                  <p className="text-muted">94.5%</p>
                 </div>
                 <div className="col-md-3">
                   <h6 className="fw-bold">Input Size</h6>
-                  <p className="text-muted">224x224 pixels</p>
+                  <p className="text-muted">128x128 pixels</p>
                 </div>
                 <div className="col-md-3">
                   <h6 className="fw-bold">Version</h6>
@@ -297,7 +311,10 @@ const TumorDetection = () => {
                 </div>
               </div>
               <div className="alert alert-warning mb-0">
-                <strong>Important:</strong> This AI analysis is for screening purposes only and should not replace professional medical diagnosis. Always consult with qualified healthcare professionals for medical decisions.
+                <strong>Important:</strong> This AI analysis is for screening
+                purposes only and should not replace professional medical
+                diagnosis. Always consult with qualified healthcare
+                professionals for medical decisions.
               </div>
             </div>
           </div>
